@@ -41,7 +41,7 @@ def main():
     GPIO.setup(led_green, GPIO.OUT)
 
     """
-    本体
+    実行部
     """
     try:
 
