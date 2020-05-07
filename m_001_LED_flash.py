@@ -1,5 +1,4 @@
 #! python3
-# -*- coding: utf-8 -*-
 
 # Filename: m_001_LED_flash 
 __author__ = "raspython"
@@ -27,7 +26,7 @@ def main():
     """
     # LED
     led_red = 13
-    led_bule = 19
+    led_blue = 19
     led_green = 26
 
     """
@@ -37,7 +36,7 @@ def main():
     GPIO.setmode(GPIO.BCM)
     # LEDへの出力
     GPIO.setup(led_red, GPIO.OUT)
-    GPIO.setup(led_bule, GPIO.OUT)
+    GPIO.setup(led_blue, GPIO.OUT)
     GPIO.setup(led_green, GPIO.OUT)
 
     """
@@ -46,18 +45,20 @@ def main():
     try:
 
         # LEDを光らせる順番でGPIOのNOをリストに格納
-        flash_no = [13, 19, 26, [13, 19], [13, 26], [19, 26], [13, 19, 26]]
+        flash_no = [led_red, led_blue, led_green,
+                    [led_red, led_blue], [led_red, led_green],
+                    [led_blue, led_green], [led_red, led_blue, led_green]]
+
         print(len(flash_no))
 
-        # リストの要素の数だけループ
-        for i in range(len(flash_no)):
+        # リストの要素を渡してループ
+        for n in flash_no:
             # LEDの点灯
-            GPIO.output(flash_no[i], GPIO.HIGH)
+            GPIO.output(n, GPIO.HIGH)
             sleep(flash_time)
             # LEDの消灯
-            GPIO.output(flash_no[i], GPIO.LOW)
+            GPIO.output(n, GPIO.LOW)
             sleep(off_time)
-
 
     except KeyboardInterrupt:
         pass
