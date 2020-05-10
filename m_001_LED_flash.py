@@ -13,12 +13,12 @@ def main():
     """
     本体
     """
-
     """
     変数定義
     """
+
     # 設定時間
-    flash_time = 1
+    flash_time = 0.5
     off_time = 0.5
 
     """
@@ -51,14 +51,19 @@ def main():
 
         print(len(flash_no))
 
-        # リストの要素を渡してループ
-        for n in flash_no:
-            # LEDの点灯
-            GPIO.output(n, GPIO.HIGH)
-            sleep(flash_time)
-            # LEDの消灯
-            GPIO.output(n, GPIO.LOW)
-            sleep(off_time)
+        # 5回繰り返す
+        for i in range(5):
+            # リストの要素を渡してループ
+            for n in flash_no:
+                # LEDの点灯
+                GPIO.output(n, GPIO.HIGH)
+                sleep(flash_time)
+                # LEDの消灯
+                GPIO.output(n, GPIO.LOW)
+                # sleep(off_time)
+
+            flash_time -= 0.1
+
 
     except KeyboardInterrupt:
         pass
