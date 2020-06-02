@@ -18,8 +18,8 @@ def main():
     # LED
 
     led_r = 13
-    led_b = 19
-    led_g = 26
+    led_g = 19
+    led_b = 26
     # スイッチ
     sw_w = 12
     sw_r = 16
@@ -44,26 +44,25 @@ def main():
     """
     実行部
     """
-    # GPIO.output([led_r, led_g, led_b], GPIO.LOW)
     try:
         while True:
             # スイッチの色とLEDの色は赤、青、緑は色と対応
             # LEDが消灯中スイッチを押されると点灯する
             # LEDが点灯中は消灯
-            if GPIO.input(sw_r) == GPIO.LOW:
+            if GPIO.input(sw_r) != GPIO.HIGH:
                 print("スイッチ赤ON")
                 GPIO.output(led_r, GPIO.HIGH)
                 GPIO.output([led_g, led_b], GPIO.LOW)
-            elif GPIO.input(sw_b) == GPIO.LOW:
+            elif GPIO.input(sw_b) != GPIO.HIGH:
                 print("スイッチ青ON")
                 GPIO.output(led_b, GPIO.HIGH)
                 GPIO.output([led_r, led_g], GPIO.LOW)
-            elif GPIO.input(sw_g) == GPIO.LOW:
+            elif GPIO.input(sw_g) != GPIO.HIGH:
                 print("スイッチ緑ON")
                 GPIO.output(led_g, GPIO.HIGH)
                 GPIO.output([led_r, led_b], GPIO.LOW)
             # スイッチ白を押すと終了
-            if GPIO.input(sw_w) == GPIO.LOW:
+            if GPIO.input(sw_w) != GPIO.HIGH:
                 break
             sleep(0.1)
 

@@ -5,7 +5,7 @@ __date__ = '2020/04/26 15:46'
 
 
 def main():
-    pass
+ pass
 
 
 if __name__ == '__main__':
