@@ -17,7 +17,6 @@ def main():
     PIN_NOの定義
     """
     # LED
-
     led_r = 13
     led_g = 19
     led_b = 26
