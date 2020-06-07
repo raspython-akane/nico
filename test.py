@@ -5,7 +5,8 @@ __date__ = '2020/04/26 15:46'
 
 
 def main():
-    print(float(1.0)/3)
+    flag = 0b0000
+    print(bin(flag | 0b1001))
 
 
 if __name__ == '__main__':
