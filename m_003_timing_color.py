@@ -50,7 +50,7 @@ def main():
     """
     変数の定義
     """
-    ans = [0b001, 0b010, 0b100]
+    binary_l = [0b001, 0b010, 0b100]
 
     """
     実行部
@@ -91,23 +91,23 @@ def main():
             # ループごとに入力判定と0.1秒wait
             # ループ回数は正解することによって減っていく
             for j in range(10 - i):
+                sleep(0.1)
+
                 #入力判定
                 # 各ボタンの入力をビットマスクで管理
                 if GPIO.input(sw_l[0]) != GPIO.HIGH:
-                    flag = flag | ans[0]
+                    flag = flag | binary_l[0]
                 if GPIO.input(sw_l[1]) != GPIO.HIGH:
-                    flag = flag | ans[1]
+                    flag = flag | binary_l[1]
                 if GPIO.input(sw_l[2]) != GPIO.HIGH:
-                    flag = flag | ans[2]
+                    flag = flag | binary_l[2]
                 print("入力{} 正解{}"
-                      .format(flag, ans[color_num]))
+                      .format(flag, binary_l[color_num]))
 
-                if flag == ans[color_num]:
+                if flag == binary_l[color_num]:
                     print("正解")
                     break
 
-
-                sleep(0.1)
             else:
                 print("失敗")
                 GPIO.output([led_l[0], led_l[3]],
