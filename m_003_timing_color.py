@@ -72,10 +72,10 @@ def main():
             sleep(1)
 
             # 色を決める乱数の生成
-            color_num = (randint(1, 100) % 3)
+            color_num = (randint(1, 99) % 3)
             print("乱数{}".format(color_num))
 
-            # 1ループ毎待ち時間を0.1秒短くする
+            # 1ループ毎LEDの点灯消灯を0.1秒短くする
             wait = 1 - (i * 0.1)
 
             # 乱数が0なら赤、1なら緑、2なら青を点灯
@@ -119,9 +119,11 @@ def main():
 
         else:
             print("完走おめでとう")
-            GPIO.output(led_l, GPIO.HIGH)
+            GPIO.output(led_l[2], led_l[5],
+                        GPIO.HIGH)
             sleep(1)
-            GPIO.output(led_l, GPIO.LOW)
+            GPIO.output(led_l[2], led_l[5],
+                        GPIO.LOW)
 
     except KeyboardInterrupt:
         pass
