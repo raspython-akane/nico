@@ -33,7 +33,6 @@ def main():
     pi.pwmSetRange(100)
     pi.pwmSetClock(2)
 
-
     """
     本体
     """
