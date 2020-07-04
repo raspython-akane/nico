@@ -45,7 +45,6 @@ def main():
         GPIO.output(flash_red, GPIO.HIGH)
         # PWM出力
         # 100%から1秒ごとにduty比が10%づつ下がる
-        # 0でループ終了
         for i in range(10):
             pwm.ChangeDutyCycle(100 - (i * 10))
             print(100 - (i * 10))
