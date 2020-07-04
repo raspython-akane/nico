@@ -29,12 +29,16 @@ def main():
     # 出力
     GPIO.setup(flash_red, GPIO.OUT,
                initial=GPIO.LOW)
-    # PWM設定
     GPIO.setup(pwm_red, GPIO.OUT)
+    # PWM設定
     # PWM周波数は50Hz
     pwm = GPIO.PWM(pwm_red, 50)
-    # dutyの初期化
+    # dutyの初期設定
     pwm.start(0)
+
+    """
+    本体
+    """
 
     try:
         # 通常出力
@@ -42,7 +46,7 @@ def main():
         # PWM出力
         # 100%から1秒ごとにduty比が10%づつ下がる
         # 0でループ終了
-        for i in range(11):
+        for i in range(10):
             pwm.ChangeDutyCycle(100 - (i * 10))
             print(100 - (i * 10))
             sleep(1)
