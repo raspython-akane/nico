@@ -44,12 +44,18 @@ def main():
         # 通常出力
         GPIO.output(flash_red, GPIO.HIGH)
         # PWM出力
-        # 100%から1秒ごとにduty比が10%づつ下がる
-        for i in range(10):
-            pwm.ChangeDutyCycle(100 - (i * 10))
-            print(100 - (i * 10))
-            sleep(1)
-
+        # 100%から1秒ごとにduty比が10%まで10%づつ
+        # さがって、その後100%まで10%づつ上がるを
+        # 2回繰り返す
+        for i in range(2):
+            for j in range(10):
+                pwm.ChangeDutyCycle(100 - (j * 10))
+                print(100 - (j * 10))
+                sleep(0.1)
+            for k in range(10):
+                pwm.ChangeDutyCycle(k * 10)
+                sleep(0.1)
+                print(100 - (k * 10))
         GPIO.output(flash_red, GPIO.LOW)
         pwm.ChangeDutyCycle(0)
 
