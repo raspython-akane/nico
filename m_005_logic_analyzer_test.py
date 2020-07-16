@@ -6,22 +6,12 @@ __date__ = '2020/06/21 10:43'
 
 
 import wiringpi as pi
-import RPi.GPIO as GPIO
 from time import sleep
 
 def main():
     """
     GPIOの初期設定
     """
-    # RPi.GPIO側
-    # PIN_NOの設定
-    GPIO.setmode(GPIO.BCM)
-    # 出力
-    GPIO.setup(21, GPIO.OUT,
-               initial=GPIO.LOW)
-    # PWM設定
-    rpi = GPIO.PWM(21, 50)
-    rpi.start(0)
 
     # wiringpi側
     # PIN NOの設定
@@ -35,15 +25,9 @@ def main():
     """
     本体
     """
-    rpi.ChangeDutyCycle(50)
     pi.pwmWrite(18, 96)
     sleep(10)
-    rpi.ChangeDutyCycle(0)
     pi.pwmWrite(18, 0)
-
-    rpi.stop()
-    GPIO.cleanup()
-
 
 
 if __name__ == '__main__':
