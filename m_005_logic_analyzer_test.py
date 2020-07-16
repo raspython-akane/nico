@@ -1,6 +1,6 @@
 #! python3
 
-# Filename: m_004_logic analyzer_test 
+# Filename: m_004_logic analyzer_test
 __author__ = "raspython"
 __date__ = '2020/06/21 10:43'
 
@@ -20,7 +20,7 @@ def main():
     GPIO.setup(21, GPIO.OUT,
                initial=GPIO.LOW)
     # PWM設定
-    rpi = GPIO.PWM(21, 100000)
+    rpi = GPIO.PWM(21, 50)
     rpi.start(0)
 
     # wiringpi側
@@ -30,7 +30,7 @@ def main():
     pi.pinMode(18, pi.GPIO.PWM_OUTPUT)
     # PWMの設定
     pi.pwmSetRange(100)
-    pi.pwmSetClock(2)
+    pi.pwmSetClock(384)
 
     """
     本体
