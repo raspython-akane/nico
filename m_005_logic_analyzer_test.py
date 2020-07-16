@@ -29,7 +29,6 @@ def main():
     # 出力
     pi.pinMode(18, pi.GPIO.PWM_OUTPUT)
     # PWMの設定
-    pi.pwmSetMode(pi.GPIO.PWM_MODE_MS)
     pi.pwmSetRange(100)
     pi.pwmSetClock(2)
 

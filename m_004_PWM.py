@@ -51,11 +51,11 @@ def main():
             for j in range(10):
                 pwm.ChangeDutyCycle(100 - (j * 10))
                 print(100 - (j * 10))
-                sleep(0.1)
+                sleep(0.5)
             for k in range(10):
                 pwm.ChangeDutyCycle(k * 10)
-                sleep(0.1)
-                print(100 - (k * 10))
+                sleep(0.5)
+                print(k * 10)
         GPIO.output(flash_red, GPIO.LOW)
         pwm.ChangeDutyCycle(0)
 
