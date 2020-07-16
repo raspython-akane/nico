@@ -29,14 +29,14 @@ def main():
     # 出力
     pi.pinMode(18, pi.GPIO.PWM_OUTPUT)
     # PWMの設定
-    pi.pwmSetRange(100)
-    pi.pwmSetClock(384)
+    pi.pwmSetRange(192)
+    pi.pwmSetClock(200)
 
     """
     本体
     """
     rpi.ChangeDutyCycle(50)
-    pi.pwmWrite(18, 50)
+    pi.pwmWrite(18, 512)
     sleep(10)
     rpi.ChangeDutyCycle(0)
     pi.pwmWrite(18, 0)
