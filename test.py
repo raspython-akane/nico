@@ -5,46 +5,23 @@ __author__ = "raspython"
 __date__ = '2020/06/21 10:43'
 
 
-import wiringpi as pi
 import RPi.GPIO as GPIO
 from time import sleep
 
-def main():
-    """
-    GPIOの初期設定
-    """
-    # RPi.GPIO側
-    # PIN_NOの設定
-    GPIO.setmode(GPIO.BCM)
-    # 出力
-    GPIO.setup(21, GPIO.OUT,
-               initial=GPIO.LOW)
-    # PWM設定
-    rpi = GPIO.PWM(21, 100000)
-    rpi.start(0)
+f = [261, 293, 329, 349]
 
-    # wiringpi側
-    # PIN NOの設定
-    pi.wiringPiSetupGpio()
-    # 出力
-    pi.pinMode(18, pi.GPIO.PWM_OUTPUT)
-    # PWMの設定
-    pi.pwmSetRange(100)
-    pi.pwmSetClock(2)
+buz = 21
 
-    """
-    本体
-    """
-    rpi.ChangeDutyCycle(50)
-    pi.pwmWrite(18, 50)
-    sleep(10)
-    rpi.ChangeDutyCycle(0)
-    pi.pwmWrite(18, 0)
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(buz, GPIO.OUT)
+pwm = GPIO.PWM(buz, 1000)
+pwm.start(50)
 
-    rpi.stop()
-    GPIO.cleanup()
+for i in f:
+    print(i)
+    pwm.ChangeFrequency(i)
+    sleep(5)
 
 
-
-if __name__ == '__main__':
-    main()
+pwm.stop()
+GPIO.cleanup()
