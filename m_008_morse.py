@@ -1,11 +1,12 @@
 #! python3
 
-# Filename: m_007_morse 
+# Filename: m_008_morse
 __author__ = "raspython"
 __date__ = '2020/08/14 08:00'
 
-# import wiringpi as pi
+import wiringpi as pi
 from time import sleep
+import unicodedata
 
 
 def main():
@@ -20,8 +21,8 @@ def main():
     """
     GPIOの初期設定
     """
-    # pi.wiringPiSetupGpio()
-    # pi.softToneCreate(buz)
+    pi.wiringPiSetupGpio()
+    pi.softToneCreate(buz)
 
     """
     モールス符号用辞書
@@ -114,10 +115,10 @@ def main():
         'わ': [3, 1, 3],
         'を': [1, 3, 3, 3],
         'ん': [1, 3, 1, 3, 1],
-        '゛': [1, 1],
-        '゜': [1, 1, 3, 3, 1],
-        'ー': [1, 3, 3, 1, 3],
-        ' ': [0, 0, 0, 0, 0, 0, 0, ]}
+        '゙': [1, 1],
+        '゚': [1, 1, 3, 3, 1],
+        'ー': [1, 3, 3, 1, 3]}
+
 
     """
     実行部
@@ -128,13 +129,6 @@ def main():
                 "ぁ", "ぃ", "ぅ", "ぇ", "ぉ"]
     con_word = ["つ", "や", "ゆ", "よ",
                 "あ", "い", "う", "え", "お"]
-    vsm_word = ["が", "ぎ", "ぐ", "げ", "ご",
-                "ざ," "じ", "ず", "ぜ", "ぞ",
-                "だ", "ぢ", "づ", "で", "ど",
-                "ば", "び", "ぶ", "べ", "ぼ",]
-    c_vsm = []
-
-    hvsm_word = ["ぱ", "ぴ","ぷ", "ぺ", "ぽ"]
 
     while True:
 
@@ -145,7 +139,13 @@ def main():
         inp_w = input('発信したい文字を'
                       '半角英数、ひらがなで入れて'
                       'ください >> ').lower()
-        # print("入力された文字は 【{}】".format(inp_w))
+        print("入力された文字は 【{}】".format(inp_w))
+
+        # 濁音と半濁音の処理
+        # 合成文字の濁点と半濁点を結合文字へ変更
+        inp_w = unicodedata.normalize("NFD", inp_w)
+        print("結合文字に変換後【{}】".format(inp_w))
+
 
         # 入力された文字の拗音 促音を置き換え
         # 一文字毎リスト化
@@ -161,7 +161,8 @@ def main():
                     or "a" <= w <= "z" \
                     or "1" <= w <= "9" \
                     or w == "ー" \
-                    or w == " ":
+                    or w == "゙" \
+                    or w == "゚":
                 pass
 
             else:
@@ -170,6 +171,7 @@ def main():
         else:
             print("入力チェックOK")
             break
+
 
     """
     制御
@@ -185,8 +187,9 @@ def main():
             pi.softToneWrite(buz, 0)
             # 符号間の間は短音と同じ間隔
             sleep(1 / 15)
+
         # 文字間は長音と同じ
-        sleep(3 / 15)
+        sleep(2 / 15)
 
 
 if __name__ == '__main__':
