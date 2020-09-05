@@ -152,7 +152,7 @@ def main():
         for p, c in zip(pal_word, con_word):
             # print(p, c)
             inp_w = inp_w.replace(p, c)
-            # inp_w = [l.replace(p, c) for l in inp_w]
+            #  inp_w = [l.replace(p, c) for l in inp_w]
             # print(inp_w)
         # print("置き換え後の文字リスト 【{}】".format(inp_w))
 
