@@ -1,7 +1,12 @@
-inp_w = "ば"
+import datetime
 
-if inp_w == "ば":
-    inp_w = [l.replace("ば", "は") for l in inp_w]
-    inp_w.append("゙")
 
-print(inp_w)
+for i in range():
+c_time = datetime.datetime.now()
+# print(c_time)
+
+h = c_time.hour
+m = c_time.minute
+s = c_time.second
+
+# print(h, m, s)
