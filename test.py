@@ -1,12 +1,7 @@
-import datetime
-
-
-for i in range():
-c_time = datetime.datetime.now()
-# print(c_time)
-
-h = c_time.hour
-m = c_time.minute
-s = c_time.second
-
-# print(h, m, s)
+n_list = [0, 0, 0, 0]
+n = 56
+print(n_list)
+zero_padding = str(n).zfill(4)
+print(zero_padding)
+n_lint = [int(i) for i in list(zero_padding)]
+print(n_lint)
