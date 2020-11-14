@@ -133,7 +133,7 @@ def proximity_counter():
             # カウントが10まで行ったら3秒赤LEDを点灯
             if count > 9:
                 print("カウントが10になったので終了")
-                # LED赤を1秒点灯させてから消灯して
+                # LED赤を3秒点灯させてから消灯して
                 # ループを抜ける
                 GPIO.output(led_r, GPIO.HIGH)
                 sleep(3)
