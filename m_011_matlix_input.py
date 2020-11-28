@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Filename: m_010_7seg_counter
 __author__ = "raspython"
-__date__ = '2020/11/09 09:12'
+__date__ = '2020/11/20 12:14'
 
 import wiringpi as pi
 from time import sleep
