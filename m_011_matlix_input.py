@@ -122,7 +122,7 @@ def matlix_key():
                       bin(blue), bin(yellow), bin(orange)))
         """
 
-        # ボタンを押して表示する値
+        # 数字表示のスイッチの場所を2進数で表す
         orange_num = 0b00000001
         yellow_num = 0b00000010
         blue_num = 0b00000100
@@ -151,7 +151,8 @@ def matlix_key():
             # 黒スイッチを押されたらLED表示開始
             if key_adr_40 & black or p_flag:
                 zero_p_list(p_num)
-                p_flag = True
+                if p_flag ==False:
+                    p_flag = True
 
             # 黒ボタンを押され且つキーが押されている場合
             # 以下の処理をする
@@ -169,12 +170,6 @@ def matlix_key():
                 if key_adr_40 & red == red:
                     p_num |= red_num
                 print(p_num)
-
-                # 白ボタンを押されたらループを抜ける
-                if key_adr_40 & white == white:
-                    p_num = 0
-                    print("終了処理開始")
-                    break
 
             # キーが押されてないなら0を表示
             else:
