@@ -1,13 +1,18 @@
-    zero_p = "0987"
-    n_list = [0, 0, 0, 0]
-    # print(list(zero_p))
-    for i, s in enumerate(list(zero_p)):
-        # print(i, s)
-        n_list[i] = int(s)
-        # print(n_list)
+l = [0b00001000,
+     0b01111110,
+     0b00001000,
+     0b01111100,
+     0b10101010,
+     0b10011010,
+     0b01001100,
+     0b00000000]
 
-    print("終了 {}".format(n_list))
+d_w = int(0b10000000000000000000000000000000)
+print_w = 0b0000000000000000
+print(d_w)
 
-
-
+for i in range(32):
+    d_w = d_w >> 1
+    p = d_w & 0b00000000000000001111111111111111
+    print(bin(p))
 
