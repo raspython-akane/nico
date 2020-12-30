@@ -202,46 +202,44 @@ word_l = ["あ", "け", "ま", "し", "て", "お", "め", "で",
           "琴", "葉", "0", "茜"]
 
 
-def b_storing(length):
+def b_storing(l):
     """
-    与えられた値の文字分リストから抜き出し、点灯パターンの
-    バイナリをbitシフトしながら表示用のバイナリに加算していく。
-    最後にそのリストを返す。
-    @param length: 格納する文字数
-    @type length: int
+    二文字づつword_lから抜き出し、点灯派パターンを与えられたリストの
+    要素の上位16bitに加算してそのリストを返す
+    @param l: バイナリリスト
+    @type length: list
     @return:表示用のバイナリのリスト
     @rtype: list
     """
     global word_l
-    # 表示用のbinリスト
-    p_w_l = [0, 0, 0, 0, 0, 0, 0, 0]
 
     # 格納したい文字を逆から順にして処理していく
-    for i in range(length, 0, -1):
+    for i in range(2, 0, -1):
         # rage(, , -1)のループ変数の最後を0にしたいので
         # ループ変数を-1する
         i -= 1
         w_l = p_word[word_l[i]]
-        print("リストに格納する文字: {}".format(word_l[i]))
+        # print("リストに格納する文字: {}".format(word_l[i]))
 
         # 8行分の処理
         for j in range(8):
             # print(bin(w_l[j]))
-            # 何文字目かによりその分8bit左へシフト
-            tmp_bin = w_l[j] << ((i) * 8)
-            # 表示用のバイナリとと加算
-            p_w_l[j] = p_w_l[j] | tmp_bin
+            # 三文字目四文字目を上位16bitに加算。
+            tmp_bin = w_l[j] << (((i) * 8 + 16))
+            l[j] = l[j] | tmp_bin
+            """
             print("【{}】を格納した後の{}行目のバイナリデータ: {}"
-                  .format(word_l[i], j + 1, bin(p_w_l[j]),))
+                  .format(word_l[i], j + 1, bin(l[j]),))
+            """
 
-    for i in range(length):
+    for i in range(2):
         del word_l[0]
-    print("格納した文字を削除後のリスト: {}".format(word_l))
+    # print("格納した文字を削除後のリスト: {}".format(word_l))
 
-    return p_w_l
+    return l
 
 
-def eight_bit_divide(p_b_l):
+def eight_bit_divide(l):
     """
     与えられたリストの中の32bitのバイナリデータの
     下位16bitを8bit2つに分けてリストに入れて、それを返す。
@@ -250,17 +248,17 @@ def eight_bit_divide(p_b_l):
     @return:
     @rtype:
     """
-    l = []
+    b_l = []
     h_8b = 0b1111111100000000
     l_8b = 0b11111111
-    for i in range(len(p_b_l)):
+    for i in range(len(l)):
         # 下位8bitをリストに入れる
         # 下位16～9bitを右へ8bitシフトしてリストに入れる
-        l.append(p_b_l[i] & l_8b)
-        l.append(((p_b_l[i]) & h_8b) >> 8)
+        b_l.append(l[i] & l_8b)
+        b_l.append(((l[i]) & h_8b) >> 8)
 
     # print(l)
-    return l
+    return b_l
 
 
 def b_shift(l, c):
@@ -279,9 +277,10 @@ def b_shift(l, c):
          matrix_led(bin_list)
          for j in range(len(l)):
             l[j] = l[j] >> 1
-            print(bin(l[j]))
+            # print(bin(l[j]))
 
-            sleep(0.1)
+            sleep(0.01)
+
 
 def matrix_led(l):
     """
@@ -294,8 +293,10 @@ def matrix_led(l):
     for i in range(matrix_row):
         pi_g.i2c_write_byte_data(ht16k33_adr, i, l[i])
 
+
 def main():
     try:
+        binary_list = [0, 0, 0, 0, 0, 0, 0, 0]
         while True:
             # 黒のスイッチを押されたら処理開始。
             if pi_g.read(sw_b) == 0:
@@ -304,24 +305,19 @@ def main():
 
                 # 表示の準備
                 # 最初のに文字を格納
-                b_l = b_storing(2)
-                # 初期表示は両方のドットマトリクスも全消灯から開始するため
-                # リストの中身全部を16bit左へシフト
-                for i in range(len(b_l)):
-                    b_l[i] = b_l[i] << 16
-                    print(bin(b_l[i]))
+                binary_list = b_storing(binary_list)
+                
 
-                b_shift(b_l, 32)
+                # 2文字分の表示が流れたらバイナリリストに次の2文字を
+                # 追加していくを繰り返す。
+                # ループ回数は残りの表示文字の1/2回の9回。
+                for i in range(9):
+                    b_shift(binary_list, 16)
+                    binary_list = b_storing(binary_list)
 
+                # 最後の文字を最後までスクロースさせる
+                b_shift(binary_list, 32)
                 break
-
-                """
-                for i in range(32):
-                    print_list = eight_bit_divide(b_l)
-                    for j in range(len(b_l)):
-                        b_l[j] = b_l[j] >> 1
-                        print(bin(b_l[j]))
-                """
 
             # 白のスイッチを押されたらLEDを消灯してループを抜ける
             if pi_g.read(sw_w) == 0:
