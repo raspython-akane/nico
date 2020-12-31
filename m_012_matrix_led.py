@@ -24,9 +24,9 @@ pi_g.set_pull_up_down(sw_w, pi.PUD_UP)
 pi_g.set_mode(led_b, pi.OUTPUT)
 
 # i2cの設定
-# 1はbusの数拡張無しは1、0x70はスレーブアドレス
+# 1はbus番号、0x70はスレーブアドレス
 ht16k33_adr = pi_g.i2c_open(1, 0x70)
-#レジスタの設定(openの戻り値でDeviceの指定、reg_address, 値）
+# レジスタの設定(openの戻り値でDeviceの指定、reg_address, 値）
 # 内部システム発信機の有効
 pi_g.i2c_write_byte_data(ht16k33_adr, 0x21, 0x01)
 # LEDの表示設定の有効
@@ -204,7 +204,7 @@ word_l = ["あ", "け", "ま", "し", "て", "お", "め", "で",
 
 def b_storing(l):
     """
-    二文字づつword_lから抜き出し、点灯派パターンを与えられたリストの
+    二文字づつword_lから抜き出し、点灯派パターンを、与えられたリストの
     要素の上位16bitに加算してそのリストを返す
     @param l: バイナリリスト
     @type length: list
@@ -224,7 +224,7 @@ def b_storing(l):
         # 8行分の処理
         for j in range(8):
             # print(bin(w_l[j]))
-            # 三文字目四文字目を上位16bitに加算。
+            # 三文字目四文字目を32bitの値の上位16bitに加算。
             tmp_bin = w_l[j] << (((i) * 8 + 16))
             l[j] = l[j] | tmp_bin
             """
@@ -251,6 +251,7 @@ def eight_bit_divide(l):
     b_l = []
     h_8b = 0b1111111100000000
     l_8b = 0b11111111
+    # 8行分繰り返す
     for i in range(len(l)):
         # 下位8bitをリストに入れる
         # 下位16～9bitを右へ8bitシフトしてリストに入れる
@@ -259,6 +260,18 @@ def eight_bit_divide(l):
 
     # print(l)
     return b_l
+
+
+def matrix_led(l):
+    """
+    与えられた点灯パターンでマトリクスLEDを点灯させる
+    @param l: マトリクスLEDの点灯パターンのリスト
+    @type l: list
+    """
+    # マトリクスLED2つで16行
+    matrix_row = 16
+    for i in range(matrix_row):
+        pi_g.i2c_write_byte_data(ht16k33_adr, i, l[i])
 
 
 def b_shift(l, c):
@@ -275,23 +288,12 @@ def b_shift(l, c):
     for i in range(c):
          bin_list = eight_bit_divide(l)
          matrix_led(bin_list)
+         # 各行ごと1bitづつずらした値で上書き
          for j in range(len(l)):
             l[j] = l[j] >> 1
             # print(bin(l[j]))
 
             sleep(0.01)
-
-
-def matrix_led(l):
-    """
-    与えられた点灯パターンでマトリクスLEDを点灯させる
-    @param l: マトリクスLEDの点灯パターンのリスト
-    @type l: list
-    """
-    # マトリクスLED2つで16行
-    matrix_row = 16
-    for i in range(matrix_row):
-        pi_g.i2c_write_byte_data(ht16k33_adr, i, l[i])
 
 
 def main():
@@ -304,7 +306,7 @@ def main():
                 pi_g.write(led_b, 1)
 
                 # 表示の準備
-                # 最初のに文字を格納
+                # 最初の2文字を格納
                 binary_list = b_storing(binary_list)
                 
 
