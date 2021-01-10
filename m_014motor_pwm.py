@@ -98,6 +98,7 @@ def duty_up(pin, edge, self):
     """
     duty比を1カウントアップする
     """
+    print(pin, edge, self)
     global duty
     duty += 1
     print("カウントアップして {}".format(duty))
