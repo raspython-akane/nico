@@ -65,25 +65,22 @@ pi_g.set_PWM_range(motor_out_1, pwm_range)
 pi_g.set_PWM_range(motor_out_2, pwm_range)
 
 
-def cw(d):
+def cw():
     """
     前転制御
-    Ｈbridgeの左上をPWMで制御
     """
-    pi_g.set_PWM_dutycycle(motor_out_1, d)
+    pi_g.set_PWM_dutycycle(motor_out_1, duty)
     pi_g.set_PWM_dutycycle(motor_out_2, 0)
 
 
 
-def ccw(d):
+def ccw():
     """
     逆転制御
-    @param d:
-    @type d:
 
     """
     pi_g.set_PWM_dutycycle(motor_out_1, 0)
-    pi_g.set_PWM_dutycycle(motor_out_2, d)
+    pi_g.set_PWM_dutycycle(motor_out_2, duty)
 
 
 def brake():
@@ -94,22 +91,40 @@ def brake():
     pi_g.set_PWM_dutycycle(motor_out_2, 100)
 
 
-def duty_up(pin, edge, self):
+def duty_up(pin, level, tick):
     """
-    duty比を1カウントアップする
+    duty比をMAX100まで1カウントアップする
+
+    @param pin: コールバックの呼び出しのGPIO_NO
+    @type pin: int
+    @param level: edgeの種類
+    @type level:int
+    @param tick: 処理間隔
+    @type tick:int
     """
-    print(pin, edge, self)
+    # print(pin, level, tick)
     global duty
-    duty += 1
+
+    if duty < 100:
+        duty += 1
     print("カウントアップして {}".format(duty))
 
 
-def duty_down():
+def duty_down(pin, level, tick):
     """
-    duty比を1カウントダウンする
+    duty比をmin0まで1カウントダウンする
+
+    @param pin: コールバックの呼び出しのGPIO_NO
+    @type pin: int
+    @param level: edgeの種類
+    @type level:int
+    @param tick: 処理間隔
+    @type tick:int
     """
     global duty
-    duty -= 1
+
+    if duty > 0:
+        duty -= 1
     print("カウントダウンして {}".format(duty))
 
 
@@ -123,18 +138,19 @@ def motor_control():
 
     # 緑か青のスイッチが押されたらduty比の変更
     # callback関数に渡す関数は関数名で関数を呼び出すのではない
+    # コールバックされた関数にはpin番号、状態、tickの3つの値が渡される
+    # 最後に必ずコールバックのキャンセルをかける
     cb0 = pi_g.callback(sw_green, pi.FALLING_EDGE, duty_up)
     cb1 = pi_g.callback(sw_blue, pi.FALLING_EDGE, duty_down)
 
     while True:
-        # 赤のスイッチが押されたら前転
         if pi_g.read(sw_red) == 0 or motor_flag == 1:
             # 前転以外からなら以下の処理
             if motor_flag != 1:
                 print("前転開始")
                 motor_flag = 1
             # 前転関数を呼ぶ
-            cw(duty)
+            cw()
 
         # 橙のスイッチが押されたら逆転
         if pi_g.read(sw_orange) == 0 or motor_flag == 2:
@@ -142,7 +158,7 @@ def motor_control():
             if motor_flag != 2:
                 print("逆転開始")
                 motor_flag = 2
-            ccw(duty)
+            ccw()
 
         # 黄色のスイッチが押されたらブレーキ
         if pi_g.read(sw_yellow) == 0 or motor_flag == 0:
@@ -156,7 +172,11 @@ def motor_control():
         if pi_g.read(sw_white) == 0:
             break
 
-        sleep(0.01)
+        sleep(0.1)
+
+    # コールバックのキャンセル
+    cb0.cancel()
+    cb1.cancel()
 
 def main():
     try:
