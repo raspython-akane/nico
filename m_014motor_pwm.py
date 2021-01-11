@@ -25,6 +25,10 @@ pwm_range = 100
 # 初期duty比
 duty = 50
 
+# 7segledの点灯パターン
+num_char = [0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7c,
+            0x07, 0x7f, 0x67, 0x00]
+
 # GPIOの初期設定
 pi_g = pi.pi()
 
@@ -50,6 +54,14 @@ pi_g.set_pull_up_down(sw_blue, pi.PUD_UP)
 pi_g.set_mode(motor_out_1, pi.OUTPUT)
 pi_g.set_mode(motor_out_2, pi.OUTPUT)
 
+# I2Cの設定
+# 1はbus番号、0x70はスレーブアドレス。
+ht16k33_adr = pi_g.i2c_open(1, 0x70)
+# レジスタの設定(openの戻り値でDeviceの指定、reg_address, 値）
+# 内部システム発信機の有効
+pi_g.i2c_write_byte_data(ht16k33_adr, 0x21, 0x01)
+# LEDの表示設定の有効
+pi_g.i2c_write_byte_data(ht16k33_adr,0x81, 0x01)
 
 # ソフトウェアPWMの設定
 
@@ -63,6 +75,7 @@ pi_g.set_PWM_frequency(motor_out_2, freq)
 # duty比の分解能の設定
 pi_g.set_PWM_range(motor_out_1, pwm_range)
 pi_g.set_PWM_range(motor_out_2, pwm_range)
+
 
 
 def cw():
@@ -128,6 +141,41 @@ def duty_down(pin, level, tick):
     print("カウントダウンして {}".format(duty))
 
 
+def display_char(l):
+    """
+    与えられた数字を7segLEDで表示する
+    @param l: 表示する数字のlist
+    @type l: l
+    """
+    # リストを逆順化する
+    l.reverse()
+    print(l)
+    for i, n in enumerate(l):
+        # print(i, n)
+        pi_g.i2c_write_byte_data(ht16k33_adr, i * 2, num_char[n])
+        # print(ht16k33_adr, i * 2, num_char[n])
+
+
+
+def zero_padding(n):
+    """
+    与えられた数字を4桁で右寄せ0詰め
+    0埋めしたものを桁毎にリストへ入れる
+    そのリストをdisplay_charに渡す
+    @param n:duty比
+    @type n:int
+    """
+    # 右寄せ4桁0埋め(str)
+    zero_p = str(n).zfill(4)
+
+    # ゼロパディングした文字列を数値化しながらリストへ入れる。
+    l = [int(n) for n in list(zero_p)]
+    # print("duty比を桁ごとにリスト化 {}".format(l))
+
+    # ディスプレイ表示
+    display_char(l)
+
+
 def motor_control():
     """
     モーターの制御部
@@ -144,6 +192,10 @@ def motor_control():
     cb1 = pi_g.callback(sw_blue, pi.FALLING_EDGE, duty_down)
 
     while True:
+        # PWMの数字を右寄せ0埋めして7segLEDで表示する
+        zero_padding(duty)
+
+        # 赤のスイッチを押されたら前転開始
         if pi_g.read(sw_red) == 0 or motor_flag == 1:
             # 前転以外からなら以下の処理
             if motor_flag != 1:
@@ -152,7 +204,7 @@ def motor_control():
             # 前転関数を呼ぶ
             cw()
 
-        # 橙のスイッチが押されたら逆転
+        # 橙のスイッチが押されたら逆転開始
         if pi_g.read(sw_orange) == 0 or motor_flag == 2:
             # 逆転以外からなら以下の処理
             if motor_flag != 2:
@@ -160,7 +212,7 @@ def motor_control():
                 motor_flag = 2
             ccw()
 
-        # 黄色のスイッチが押されたらブレーキ
+        # 黄色のスイッチが押されたらブレーキ開始
         if pi_g.read(sw_yellow) == 0 or motor_flag == 0:
             # 停止以外からなら以下の処理
             if motor_flag != 0:
@@ -194,6 +246,10 @@ def main():
             sleep(0.1)
     except KeyboardInterrupt:
         pass
+
+    # 7segLEDを消灯
+    l = [10, 10, 10, 10]
+    display_char(l)
 
     # GPIOの終了処理
     pi_g.write(motor_out_1, 0)

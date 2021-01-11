@@ -280,7 +280,8 @@ def b_shift(l, c):
     そのリストを点灯用の関数に渡す
     その後、与えられた値分リストの中の全バイナリを
     1bitシフトさせながら点灯関数に渡す
-    @param l: 点灯パターンのリスト
+    @param l: 点灯パターンのリストgaa1q2w3e4r
+
     @type l: list
     @param c: bitシフトさせる回数
     @type c: int
@@ -291,7 +292,7 @@ def b_shift(l, c):
          # 各行ごと1bitづつずらした値で上書き
          for j in range(len(l)):
             l[j] = l[j] >> 1
-            # print(bin(l[j]))
+            print(bin(l[j]))
 
             sleep(0.01)
 
