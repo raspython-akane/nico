@@ -47,8 +47,8 @@ pi_g.set_pull_up_down(sw_white, pi.PUD_UP)
 pi_g.set_pull_up_down(sw_red, pi.PUD_UP)
 pi_g.set_pull_up_down(sw_orange, pi.PUD_UP)
 pi_g.set_pull_up_down(sw_yellow, pi.PUD_UP)
-pi_g.set_pull_up_down(sw_green, pi.PUD_UP)
-pi_g.set_pull_up_down(sw_blue, pi.PUD_UP)
+# pi_g.set_pull_up_down(sw_green, pi.PUD_UP)
+# pi_g.set_pull_up_down(sw_blue, pi.PUD_UP)
 
 # 出力設定
 pi_g.set_mode(motor_out_1, pi.OUTPUT)
