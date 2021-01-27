@@ -47,8 +47,7 @@ pi_g.set_pull_up_down(sw_white, pi.PUD_UP)
 pi_g.set_pull_up_down(sw_red, pi.PUD_UP)
 pi_g.set_pull_up_down(sw_orange, pi.PUD_UP)
 pi_g.set_pull_up_down(sw_yellow, pi.PUD_UP)
-# pi_g.set_pull_up_down(sw_green, pi.PUD_UP)
-# pi_g.set_pull_up_down(sw_blue, pi.PUD_UP)
+
 
 # 出力設定
 pi_g.set_mode(motor_out_1, pi.OUTPUT)
@@ -104,16 +103,9 @@ def brake():
     pi_g.set_PWM_dutycycle(motor_out_2, 100)
 
 
-def duty_up(pin, level, tick):
+def duty_up():
     """
     duty比をMAX100まで1カウントアップする
-
-    @param pin: コールバックの呼び出しのGPIO_NO
-    @type pin: int
-    @param level: edgeの種類
-    @type level:int
-    @param tick: 処理間隔
-    @type tick:int
     """
     # print(pin, level, tick)
     global duty
@@ -123,16 +115,9 @@ def duty_up(pin, level, tick):
     print("カウントアップして {}".format(duty))
 
 
-def duty_down(pin, level, tick):
+def duty_down():
     """
     duty比をmin0まで1カウントダウンする
-
-    @param pin: コールバックの呼び出しのGPIO_NO
-    @type pin: int
-    @param level: edgeの種類
-    @type level:int
-    @param tick: 処理間隔
-    @type tick:int
     """
     global duty
 
