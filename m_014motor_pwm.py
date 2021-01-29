@@ -103,11 +103,12 @@ def brake():
     pi_g.set_PWM_dutycycle(motor_out_2, 100)
 
 
-def duty_up():
+def duty_up(pin, status, tick):
     """
     duty比をMAX100まで1カウントアップする
+    与えられる値は割り込み時に与えられる値
     """
-    # print(pin, level, tick)
+    # print(pin, status, tick)
     global duty
 
     if duty < 100:
@@ -115,9 +116,10 @@ def duty_up():
     print("カウントアップして {}".format(duty))
 
 
-def duty_down():
+def duty_down(pin, status, tick):
     """
     duty比をmin0まで1カウントダウンする
+    与えられる値は割り込み時に与えられる値
     """
     global duty
 
@@ -172,6 +174,7 @@ def motor_control():
     # 緑か青のスイッチが押されたらduty比の変更
     # callback関数に渡す関数は関数名で関数を呼び出すのではない
     # コールバックされた関数にはpin番号、状態、tickの3つの値が渡される
+    # tickはイベントが発生したマイクロ秒が返される
     # 最後に必ずコールバックのキャンセルをかける
     cb0 = pi_g.callback(sw_green, pi.FALLING_EDGE, duty_up)
     cb1 = pi_g.callback(sw_blue, pi.FALLING_EDGE, duty_down)
