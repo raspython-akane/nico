@@ -1,1 +1,2 @@
-print(700.2 * 10)
+for i in range(3, -1, -1):
+    print(i)
