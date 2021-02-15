@@ -16,6 +16,14 @@ out_a2 = 13
 out_b1 = 19
 out_b2 = 26
 
+mat_x = 23
+mat_y = 24
+mat_z = 25
+mat_a = 12
+mat_b = 16
+mat_c = 20
+mat_d = 21
+
 # 7seg_ledの点灯パターン
 num_char = [0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7c,
             0x07, 0x7f, 0x67, 0x00]
@@ -32,6 +40,9 @@ step_count = 0
 
 # モータードライバの管理変数
 r_count = 0
+
+# モーター動作のflag
+motor_flag = 0
 
 # 出力GPIOのリスト
 pin_l = [out_a1, out_a2, out_b1, out_b2]
@@ -62,22 +73,61 @@ pi_g.i2c_write_byte_data(ht16k33_adr, 0x81, 0x01)
 pi_g.i2c_write_byte_data(ht16k33_adr, 0xa1, 0x00)
 
 
-def key_val():
+def matrix_sw():
     """
-    キーマトリクスの入力の値をリストに入れて返す。
-    すべての読み込みが終わると値は初期化される(16k33の仕様)
-    @return: キーマトリクスの入力の値
+    マトリクス入力は確認したいスイッチの
+    x,y,z軸GPIO出力をLOW、そのほかをHIにした後
+    a,b,c,dの入力を見てLOWになっているものが
+    ボタンが押されているもの
+
+    例 ヘッダーピンが上側の時、左上の確認したい場合
+    zの出力 LOW
+    yの出力 HI
+    xの出力 HI
+
+    の出力にして
+    aのGPIOの入力がLOWになっていれば押下されている
+
+
+    matrix入力の並び
+
+    z_a y_a x_a
+    z_b y_b x_b
+    z_c y_c x_c
+    z_d y_d x_d
+
+    入力がチェックされるごとにカウントが1上がる
+    入力がLOWになっているカウントをリストに入れかえす
+
+    スイッチflag番号
+    0  4  8
+    1  5  9
+    2  6  10
+    3  7  11
+
+    @return: 入力されたスイッチの場所の値を入れたリスト
     """
-    # キーマトリクスの入力のレジスタアドレスのリスト
-    adr_l = [0x40, 0x41, 0x42, 0x43, 0x44, 0x45]
+    count = 0
+    inp_l = []
 
-    val_l =[]
-    for i in adr_l:
-        val_l.append(pi_g.i2c_read_byte_data(ht16k33_adr, i))
+    y_out = [[0, 1, 1], [1, 0, 1], [1, 1, 0]]
+    x = [mat_a, mat_b, mat_c, mat_d]
 
-    print("キー入力のバイナリの値: {}".format(val_l))
+    # ｙ軸をzから順にLOW、そのほかをHIにする。
+    for gpio_out in y_out:
+        pi_g.write(mat_z, gpio_out[0])
+        pi_g.write(mat_y, gpio_out[1])
+        pi_g.write(mat_x, gpio_out[2])
+        # x軸の入力チェック、入力されたカウントをリストに入れる
+        # チェックごとにカウントが1上がる
+        for x_axis in x:
+            if pi_g.read(x_axis) == 0:
+                inp_l.append(count)
+            count += 1
 
-    return val_l
+    print("入力ボタンのリスト {}".format(inp_l))
+
+    return inp_l
 
 
 def zero_padding(n):
@@ -128,7 +178,7 @@ def count_control(n):
     global r_count
     global step_count
 
-    # _countの値は0～7の間でループさせる
+    # _countの値は0～3の間でループさせる
     r_count += n
     if r_count > 3:
         r_count = 0
@@ -144,14 +194,19 @@ def rotation():
     """
     回転制御2相励磁のローテーションの場所の出力値をGPIOで出力する
     """
+    global motor_flag
+    # モーター出力の為flagを1にする
+    motor_flag = 1
 
     # 出力の値に上位1bit目から順番に1を積算して行き、各々のPINの出力を決める
     for i in range(4):
         # 出力の値を渡すのに該当桁が一桁目になるようにビットシフト
         out = (out_val[r_count] & out_pin[i]) >> (3 - i)
         pi_g.write(pin_l[i], out)
-        print(bin(out_val[r_count] & out_pin[i]))
-        print("GPIO_{}の出力 , {}".format(pin_l[i], out))
+        # print("GPIO_{}の出力 , {}".format(pin_l[i], out))
+
+    # モーター出力が終わったのでflagを0に
+    motor_flag = 0
 
 
 def jog(flag):
@@ -182,41 +237,39 @@ def control():
         # ステップ数にステップ角の10倍の18
         zero_padding(step_count * step_angle)
 
-        key_l = key_val()
-        if key_l[2] == 0b010:
+        # キーマトリクスのチェック
+        inp_l = matrix_sw()
+        # スイッチ2が押されたらCW方向にjog運転
+        if 2 in inp_l:
             jog(1)
-        elif key_l[2] == 0b100:
+
+        elif 6 in inp_l:
             jog(-1)
 
-        if key_l[0] == 2:
+        if 4 in inp_l:
             break
 
         sleep(sleep_time)
-
-
 
 
 def main():
     # モーターの初期位置をa1のみが出力の場所からスタート
     rotation()
 
-    # キーマトリクスの読み込み初期化
-    key_l = key_val()
-
-
     try:
         while True:
+            
             # 黒のスイッチが押されたらスタート
-            if key_l[0] == 0b001:
+            inp_l = matrix_sw()
+            if 0 in inp_l:
                 print("スタート")
                 control()
 
             # 白のスイッチが押されたら終了処理
-            if key_l[0] == 2:
+            inp_l = matrix_sw()
+            if 4 in inp_l:
                 print("終了処理")
                 break
-            # キーマトリクスの読み込み
-            key_l = key_val()
 
             sleep(0.1)
 
