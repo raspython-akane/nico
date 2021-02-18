@@ -6,6 +6,7 @@ __date__ = '2021/02/13 10:38'
 
 import pigpio as pi
 from time import sleep
+from copy import copy
 
 """
 変数の定義
@@ -41,8 +42,8 @@ step_count = 0
 # モータードライバの管理変数
 r_count = 0
 
-# モーター動作のflag
-motor_flag = 0
+# 入力角度の数字
+inp_angle_n = [0, 0, 0, 0]
 
 # 出力GPIOのリスト
 pin_l = [out_a1, out_a2, out_b1, out_b2]
@@ -125,7 +126,7 @@ def matrix_sw():
                 inp_l.append(count)
             count += 1
 
-    print("入力ボタンのリスト {}".format(inp_l))
+    # print("入力ボタンのリスト {}".format(inp_l))
 
     return inp_l
 
@@ -167,12 +168,12 @@ def display_char(l):
             # print(bin(num_char[n] | 0x80))
         else:
             pi_g.i2c_write_byte_data(ht16k33_adr, i * 2, num_char[n])
-            # print(bin(num_char[n]))
+        # print(bin(num_char[n]))
 
 
 def count_control(n):
     """
-    r_countとstepカウントをインクリメントもしくはデクリメントする
+    r_countとstepカウントをカウントアップもしくはカウントダウンする
     @param n:変化させる値(int)
     """
     global r_count
@@ -209,12 +210,83 @@ def rotation():
     motor_flag = 0
 
 
+def input_angle():
+    """
+    入力角度の変更
+    入力モード中は入力桁以外の7segLEDを点滅させる
+    @return: 
+    """
+    print("入力開始")
+    # 入力角度の変数
+    global inp_angle_n
+    # 点滅フラグ
+    flash_flag = 0
+    # 入力桁の変数
+    digits_num = 0
+
+    while True:
+        # キー入力の確認
+        inp_l = matrix_sw()
+
+        # 入力角度のリストを表示するときに逆順に変更するため
+        # リストをコピーする
+        char_l = copy(inp_angle_n)
+
+        # 入力時は0.1秒ごと入力角度の入力桁数以外の桁を点滅させる
+        # 入力パターン
+        if flash_flag == 0:
+            print("入力角度は {}".format(char_l))
+            display_char(char_l)
+            flash_flag = 1
+        # 消灯パターン
+        else:
+            for i in range(4):
+                # 入力桁は点滅させない
+                if i == digits_num:
+                    # print(l)
+                    pi_g.i2c_write_byte_data(ht16k33_adr, i * 2, num_char[char_l[3 - digits_num]])
+                    # 下一桁目にはデシマルポイントを付ける
+                    if i == 1:
+                        pi_g.i2c_write_byte_data(ht16k33_adr, i * 2,
+                                                 (num_char[char_l[3 - digits_num]] | 0x80))
+                # 入力桁以外は消灯
+                else:
+                    # 下一桁目はデシマルポイントのみを表示
+                    if i == 1:
+                        pi_g.i2c_write_byte_data(ht16k33_adr, i * 2, 0x80)
+                    else:
+                        pi_g.i2c_write_byte_data(ht16k33_adr, i * 2, num_char[10])
+            flash_flag = 0
+        
+
+        # 8番スイッチが押されたら入力角度の入力桁のカウントアップ
+        if 8 in inp_l:
+            inp_angle_n [3 - digits_num] += 1
+            # 9を超えたら0に戻す
+            if inp_angle_n[3 - digits_num] > 9:
+                inp_angle_n[3 - digits_num] = 0
+        # 9番スイッチが押されたら入力角度の入力桁のカウントダウン
+        elif 9 in inp_l:
+            inp_angle_n[3 - digits_num] -= 1
+            # 0より小さくなったら9にする
+            if inp_angle_n[3 - digits_num] < 0:
+                inp_angle_n[3 - digits_num] = 9
+
+
+        # 7番スイッチが押されたら入力終了
+        if 7 in inp_l:
+            break
+
+        sleep(0.3)
+
+
+
 def jog(flag):
     """
     ステップ数が0から400の間ならインクリメントとデクリメント制御
     黄色、もしくは橙のスイッチが押された場合count_control()を呼ぶ
-    黄色: 1づつインクリメント
-    橙  : 1づつデクリメント
+    黄色: 1づつカウントアップ
+    橙  : 1づつカウントダウン
     その後モーターの回転制御関数を呼ぶ。
     @param flag: 回転方向の値(int)
     @return:
@@ -233,14 +305,19 @@ def control():
     押されたスイッチによって制御する関数を呼び出す。
     制御間隔は変数で決めた値
     """
+
     while True:
         # ステップ数にステップ角の10倍の18
         zero_padding(step_count * step_angle)
 
         # キーマトリクスのチェック
         inp_l = matrix_sw()
+
+        # スイッチ3が押されたら角度入力
+        if 3 in inp_l:
+            input_angle()
         # スイッチ2が押されたらCW方向にjog運転
-        if 2 in inp_l:
+        elif 2 in inp_l:
             jog(1)
 
         elif 6 in inp_l:
