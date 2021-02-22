@@ -62,6 +62,21 @@ out_pin = [0b1000, 0b0100, 0b0010, 0b0001]
 # GPIOの初期設定
 pi_g = pi.pi()
 
+# 入力設定
+pi_g.set_mode(mat_a, pi.INPUT)
+pi_g.set_mode(mat_b, pi.INPUT)
+pi_g.set_mode(mat_c, pi.INPUT)
+pi_g.set_mode(mat_d, pi.INPUT)
+
+# 出力設定
+pi_g.set_mode(out_a1, pi.OUTPUT)
+pi_g.set_mode(out_a2, pi.OUTPUT)
+pi_g.set_mode(out_b1, pi.OUTPUT)
+pi_g.set_mode(out_b2, pi.OUTPUT)
+pi_g.set_mode(mat_x, pi.OUTPUT)
+pi_g.set_mode(mat_y, pi.OUTPUT)
+pi_g.set_mode(mat_z, pi.OUTPUT)
+
 # I2Cの設定
 # 1はbus番号、0ｘ70はスレーブアドレス。
 ht16k33_adr = pi_g.i2c_open(1, 0x70)
@@ -70,8 +85,6 @@ ht16k33_adr = pi_g.i2c_open(1, 0x70)
 pi_g.i2c_write_byte_data(ht16k33_adr, 0x21, 0x01)
 # LEDの表示設定の有効
 pi_g.i2c_write_byte_data(ht16k33_adr, 0x81, 0x01)
-# INT/LOWの出力はLOW
-pi_g.i2c_write_byte_data(ht16k33_adr, 0xa1, 0x00)
 
 
 """
@@ -249,13 +262,13 @@ def input_angle():
                 if i == digits_num:
                     # print(l)
                     pi_g.i2c_write_byte_data(ht16k33_adr, i * 2, num_char[char_l[3 - digits_num]])
-                    # 下一桁目にはデシマルポイントを付ける
+                    # 下二桁目にはデシマルポイントを付ける
                     if i == 1:
                         pi_g.i2c_write_byte_data(ht16k33_adr, i * 2,
                                                  (num_char[char_l[3 - digits_num]] | 0x80))
                 # 入力桁以外は消灯
                 else:
-                    # 下一桁目はデシマルポイントのみを表示
+                    # 下二桁目はデシマルポイントのみを表示
                     if i == 1:
                         pi_g.i2c_write_byte_data(ht16k33_adr, i * 2, 0x80)
                     else:
