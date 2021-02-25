@@ -433,8 +433,12 @@ def read_txt():
                 step_cal(l)
                 sleep(1)
 
+        inp_txt.close()
+
     except FileNotFoundError:
         print("設定ファイルが見つかりません")
+
+
 
 
 def jog(flag):
