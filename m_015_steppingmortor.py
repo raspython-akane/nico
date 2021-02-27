@@ -499,19 +499,17 @@ def control():
 
 
 def main():
-    # モーターの初期位置をa1のみが出力の場所からスタート
-    rotation()
 
     try:
         while True:
             
-            # 黒のスイッチが押されたらスタート
+            # 0番スイッチが押されたらスタート
             inp_l = matrix_sw()
             if 0 in inp_l:
                 print("スタート")
                 control()
 
-            # 白のスイッチが押されたら終了処理
+            # 4番スイッチが押されたら終了処理
             inp_l = matrix_sw()
             if 4 in inp_l:
                 print("終了処理")
