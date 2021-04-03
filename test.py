@@ -1,2 +1,2 @@
-for _ in range(3):
-    print(_)
+print("ｱ".encode("shift_jis"))
+print(b"ABCDEF")

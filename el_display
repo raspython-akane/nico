@@ -1,0 +1,46 @@
+#!/usr/bin/env python3
+
+# Filename: SO1602A 
+__author__ = "raspython"
+__date__ = '2021/04/04 06:43'
+
+import pigpio as pi
+
+
+class SO1602A():
+
+    def __init__(self):
+        """
+        初期化
+        """
+        # pigpioの用意
+        self.pi_g = pi.pi()
+
+        # I2Cの設定
+        # 1はbus番号、0x3cはスレーブアドレス。
+        self.so1602_adr = self.pi_g.i2c_open(1, 0x3c)
+
+
+    def clear_display(self):
+        """
+        Clear Display
+        """
+        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x01)
+
+
+    def return_home(self):
+        """
+        Return Home
+        """
+        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x02)
+
+
+
+
+
+def main():
+    pass
+
+
+if __name__ == '__main__':
+    main()
