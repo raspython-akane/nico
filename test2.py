@@ -14,25 +14,15 @@ while True:
     if w == 0:
         break
     if w == 1:
+        print("ディスプレイの初期化")
         d.clear_display()
         d.return_home()
     if w == 2:
-        d.print("1234ABCDEabcdef##$$%%&$#ｱｲｳｴｵ", time=0.1)
+        print("文字の表示")
+        d.print("ｱｶﾈﾁｬﾝｶﾜｲｲﾔｯﾀｰ      ", time=0.1)
     if w == 3:
+        print("double_high ON")
         d.print_line(double_high=True)
     if w == 4:
+        print("double_high OFF")
         d.print_line(double_high=False)
-    if w == 5:
-        d.display_method(reverse=False)
-    if w == 6:
-        d.display_method(reverse=True)
-    if w == 7:
-        d.display_method(one_character=True)
-    if w == 8:
-        d.display_method(one_character=False)
-    if w == 9:
-        d.cursor_display_shift()
-    if w == 10:
-        d.cursor_display_shift(right_shift=False)
-    if w == 11:
-        d.cursor_display_shift(display_shift=True)
