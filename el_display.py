@@ -57,6 +57,17 @@ class SO1602A():
         self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x0f)
 
 
+    def char_display(self, s):
+        """
+
+        @param s: 文字列
+        @return:
+        """
+        l = s.encode("shift_jis")
+
+        for i in l:
+            self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x40, i)
+
 
 
 
