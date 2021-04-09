@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Filename: SO1602A
+# Filename: el_display
 __author__ = "raspython"
 __date__ = '2021/04/04 06:43'
 
@@ -8,7 +8,7 @@ import pigpio as pi
 from time import sleep
 
 
-class SO1602A:
+class So1602a:
 
     def __init__(self):
         """
@@ -89,14 +89,15 @@ class SO1602A:
         """
 
         self.val= 0x08
-        # ディスプレイの表示
-        if display:
+
+        # カーソル位置の点滅表示
+        if blink:
             self.val += 0x01
         # カーソルの表示
         if cursor:
             self.val += 0x02
-        # カーソル位置の点滅表示
-        if blink:
+        # ディスプレイの表示
+        if display:
             self.val += 0x04
 
         # 設定を流す
@@ -155,7 +156,6 @@ class SO1602A:
         @param n: コントラストの値
         """
         contrast = n
-        # 拡張コマンドのREとSDのflagを立てる
         # RE flag ON
         self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x2a)
         # SD flag ON
@@ -165,14 +165,85 @@ class SO1602A:
         self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x81)
         self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, contrast)
 
-        # 拡張コマンドのREとSDのフラグを折る
         # SD flag OFF
         self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x78)
         # RE flag OFF
         self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x28)
 
 
+    def scroll_enable(self, hs1=True, hs2=True, hs1and2=True):
+        """
 
+        @param hs1:
+        @param hs2:
+        @param hs1and2:
+        @return:
+        """
+        self.val = 0x10
+        if hs1and2:
+            self.val += 0x1f
+        if hs1and2 == False and hs1:
+            self.val += 0x04
+        if hs1and2 == False and hs2:
+            self.val += 0x02
+
+
+        # REとISのflag ON
+        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x2b)
+
+        # スクロールする、行の変更。
+        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, self.val)
+
+        # REとISのflag OFF
+        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x28)
+
+
+    def shift_enable(self, first_line=True, second_line2=True, all=True):
+        """
+
+        @param hs1:
+        @param hs2:
+        @param hs1and2:
+        @return:
+        """
+        if all:
+            self.val = 0x13
+        if first_line:
+            self.val = 0x11
+        if second_line2:
+            self.val = 0x12
+
+        # RE flag ON
+        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x2a)
+
+        #
+        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x1d)
+
+        # REのflag OFF
+        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x28)
+
+
+        """
+        *** ISとREのフラグについて ***
+        0x29でREとISを同時にONはできない
+        REの変更の値が1の時点でextended fanction setになるので
+        RE変更フラグが0の0x29でISのフラグを立ててからREのフラグを変更する
+        フラグを戻す時もREに0の変更を与えて拡張設定をOFFしてからISのフラグを切る
+        """
+        # ISのflagをON
+        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x29)
+
+        # REのflag ON
+        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x2a)
+
+        # スクロールする、行の変更。
+        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, self.val)
+
+        # REのflag OFF
+        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x28)
+
+        # ISのFlagをOFF
+        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x28)
 
     """
     文字の書き込み
@@ -200,9 +271,12 @@ def main():
     flag_02 = True
     flag_03 = False
     flag_08 = False
+    flag_09 = True
+    flag_10 = True
+    flag_11 = True
 
     # 表示する文字
-    p_word = "ｱｶﾈﾁｬﾝｶﾜｲｲﾔｯﾀｰ      "
+    p_word = "ｱｶﾈﾁｬﾝｶﾜｲｲﾔｯﾀｰ      ｱｵｲﾁｬﾝｶﾜｲｲﾔｯﾀｰ"
 
     # メニュー文字の決定
     m_word_lr = lambda bool: "右" if bool else "左"
@@ -211,13 +285,16 @@ def main():
     # インスタンスを表すオブジェクトを渡すためインスタンス化
     # pythonのクラス言語使用は通常のメソッドでは、第一引数はそのクラスのインスタンス
     # を表すオブジェクトを受け取る(self)
-    so1602 = SO1602A()
+    so1602 = So1602a()
 
     while True:
         # メニューの表示文字の設定
         set_w_02 = m_word_lr(flag_02)
         set_w_03 = m_word_onoff(flag_03)
         set_w_08 = m_word_onoff(flag_08)
+        set_w_09 = m_word_onoff(flag_09)
+        set_w_10 = m_word_onoff(flag_10)
+        set_w_11 = m_word_onoff(flag_11)
 
         # メニューの表示
         n = int(input(
@@ -233,6 +310,9 @@ def main():
 6 : ディスプレイ表示を右へシフト
 7 : ディスプレイ表示を左へシフト
 8 : double_high                【{}】
+9 : アンダーカーソルの表示     【{}】
+10: ブロックカーソルの表示     【{}】
+11: ディスプレイの表示を消す   【{}】
 
 
 50: ｱｶﾈﾁｬﾝｶﾜｲｲﾔｯﾀｰの表示
@@ -240,7 +320,10 @@ def main():
 99: 終了
 ***
 
-""".format(set_w_02, set_w_03, set_w_08)))
+""".format(set_w_02, set_w_03, set_w_08, set_w_09, set_w_10, set_w_11)))
+
+        # so1602.scroll_enable(False, False, True)
+        so1602.shift_enable(False, True, False)
 
         # 設定
         if n == 0:
@@ -291,6 +374,19 @@ def main():
             print("double_high変更")
             flag_08 = not flag_08
             so1602.print_line(double_high=flag_08)
+
+        if n == 9:
+            print("カーソルの表示設定")
+            flag_09 = not flag_09
+            so1602.display_on_off_control(True, flag_09, flag_10)
+
+        if n == 10:
+            print("点滅の表示設定")
+            flag_10 = not flag_10
+            so1602.display_on_off_control(True, flag_09, flag_10)
+
+        if n == 11:
+            print("ディスプレイの表示設定")
 
         if n == 50:
             so1602.print(p_word, 100)
