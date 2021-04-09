@@ -107,7 +107,7 @@ class So1602a:
     def cursor_shift(self, right_shift=True):
         """
         カーソルの移動
-        @param r_l:
+        @param r_l: 移動flag
         """
         self.val = 0x10
         if right_shift:
@@ -120,7 +120,7 @@ class So1602a:
     def display_shift(self, right_shift=True):
         """
         表示を移動させる
-        @param right_shift:
+        @param right_shift: 表示flag
         """
         self.val = 0x18
         if right_shift:
@@ -128,7 +128,6 @@ class So1602a:
 
         # 設定を流す
         self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, self.val)
-
 
 
     def print_line(self, tow_line=True, double_high=False):
@@ -147,6 +146,66 @@ class So1602a:
 
         # 設定を流す
         self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, self.val)
+
+
+    def shift_enable(self, first_line=True, second_line2=True, all=True):
+        """
+        スクロールをする行を決定する
+        @param first_line: 1行目
+        @param second_line2: 2行目
+        @param all: どっちもO
+        @return:
+        """
+        if all:
+            self.val = 0x13
+        elif first_line:
+            self.val = 0x11
+        elif second_line2:
+            self.val = 0x12
+
+        # display shift enableをONする準備
+        # REのflag ON
+        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x2a)
+
+        # display shift enableをON
+        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x1d)
+
+        # REのflag OFF
+        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x28)
+
+
+        """
+        *** ISフラグについて ***
+        0x29でREとISを同時にONはできない
+        REの変更の値が1の時点でextended fanction setになるので
+        RE変更フラグが0の0x29でISのフラグを立ててからREのフラグを変更する
+        フラグを戻す時もREに0の変更を与えて拡張設定をOFFしてからISのフラグを切る
+        """
+        # ISのflagをON
+        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x29)
+
+        # REのflag ON
+        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x2a)
+
+        # スクロールする、行の変更。
+        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, self.val)
+
+        # REのflag OFF
+        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x28)
+
+        # ISのFlagをOFF
+        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x28)
+
+
+        # display shift enableをFFする準備
+        # REのflag ON
+        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x2a)
+
+        # display shift enableをOFF
+        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x1c)
+
+        # REのflag OFF
+        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x28)
 
 
     def contrast_control(self, n=0x7f):
@@ -171,85 +230,56 @@ class So1602a:
         self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x28)
 
 
-    def scroll_enable(self, hs1=True, hs2=True, hs1and2=True):
+    def fade_out_blinking(self, fade=False, blink=False, frames=0b0001):
         """
+        文字をフェードアウトまたは点滅させる
+        フェードアウトと点滅は両立できない
+        タイミングの時間はコマンドで与える下位4bitで決定
+        ----------------
+        0000b 8Frames
+        0001b 16Frames
+        :     :
+        1110b 120Frames
+        1111b 126Frames
+        ----------------
 
-        @param hs1:
-        @param hs2:
-        @param hs1and2:
-        @return:
+        @param fade:  フェードflag
+        @param blink:  点滅flag
+        @param frames: フェードする時間設定
         """
-        self.val = 0x10
-        if hs1and2:
-            self.val += 0x1f
-        if hs1and2 == False and hs1:
-            self.val += 0x04
-        if hs1and2 == False and hs2:
-            self.val += 0x02
-
-
-        # REとISのflag ON
-        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x2b)
-
-        # スクロールする、行の変更。
-        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, self.val)
-
-        # REとISのflag OFF
-        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x28)
-
-
-    def shift_enable(self, first_line=True, second_line2=True, all=True):
-        """
-
-        @param hs1:
-        @param hs2:
-        @param hs1and2:
-        @return:
-        """
-        if all:
-            self.val = 0x13
-        if first_line:
-            self.val = 0x11
-        if second_line2:
-            self.val = 0x12
-
         # RE flag ON
         self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x2a)
+        # SD flag ON
+        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x79)
 
-        #
-        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x1d)
+        # 点滅の設定
+        if blink:
+            self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x23)
+            self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, (0b00110000 | frames))
 
-        # REのflag OFF
+        # フェードの設定
+        elif fade:
+            self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x23)
+            self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, (0b00100000 | frames))
+
+        else:
+            self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x23)
+            self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, (0b00000000))
+
+
+        # SD flag OFF
+        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x78)
+        # RE flag OFF
         self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x28)
 
 
-        """
-        *** ISとREのフラグについて ***
-        0x29でREとISを同時にONはできない
-        REの変更の値が1の時点でextended fanction setになるので
-        RE変更フラグが0の0x29でISのフラグを立ててからREのフラグを変更する
-        フラグを戻す時もREに0の変更を与えて拡張設定をOFFしてからISのフラグを切る
-        """
-        # ISのflagをON
-        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x29)
 
-        # REのflag ON
-        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x2a)
-
-        # スクロールする、行の変更。
-        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, self.val)
-
-        # REのflag OFF
-        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x28)
-
-        # ISのFlagをOFF
-        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x28)
 
     """
     文字の書き込み
     """
 
-    def print(self, s, time=0):
+    def print(self, s, time=0, slide_flag=False):
         """
         ディスプレイに表示する
         @param s: 表示する文字列
@@ -257,9 +287,16 @@ class So1602a:
         """
         l = s.encode("shift_jis")
 
-        for i in l:
-            self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x40, i)
+        for i, s in enumerate(l):
+            if i < 20 and slide_flag:
+                self.shift_enable(True, False, False)
+            # 2行目以降の表示の時は1行目はスライドさせない
+            if i > 19 and slide_flag:
+                self.shift_enable(False, True, False)
+
+            self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x40, s)
             sleep(time / 1000)
+        self.shift_enable(False, False, True)
 
 
 
@@ -274,11 +311,15 @@ def main():
     flag_09 = True
     flag_10 = True
     flag_11 = True
+    flag_12 = 2
+    flag_13 = False
+    flag_14 = False
 
     # 表示する文字
-    p_word = "ｱｶﾈﾁｬﾝｶﾜｲｲﾔｯﾀｰ      ｱｵｲﾁｬﾝｶﾜｲｲﾔｯﾀｰ"
+    p_word = "ｱｶﾈﾁｬﾝｶﾜｲｲﾔｯﾀｰ      "
+    p_aka_ao = "ｱｶﾈﾁｬﾝｶﾜｲｲﾔｯﾀｰ      ｱｵｲﾁｬﾝｶﾜｲｲﾔｯﾀｰ      "
 
-    # メニュー文字の決定
+    # メニュー文字の設定
     m_word_lr = lambda bool: "右" if bool else "左"
     m_word_onoff = lambda bool: "ON" if bool else "OFF"
 
@@ -288,13 +329,24 @@ def main():
     so1602 = So1602a()
 
     while True:
-        # メニューの表示文字の設定
+
+        # メニュー文字の決定
         set_w_02 = m_word_lr(flag_02)
         set_w_03 = m_word_onoff(flag_03)
         set_w_08 = m_word_onoff(flag_08)
         set_w_09 = m_word_onoff(flag_09)
         set_w_10 = m_word_onoff(flag_10)
         set_w_11 = m_word_onoff(flag_11)
+        if flag_12 == 2 and flag_03 == True:
+            set_w_12 = "両方ON"
+        elif flag_12 == 0:
+            set_w_12 = "1行目ON"
+        elif flag_12 == 1:
+            set_w_12 = "2行目ON"
+        else:
+            set_w_12 = "両方OFF"
+        set_w_13 = m_word_onoff(flag_13)
+        set_w_14 = m_word_onoff(flag_14)
 
         # メニューの表示
         n = int(input(
@@ -313,6 +365,9 @@ def main():
 9 : アンダーカーソルの表示     【{}】
 10: ブロックカーソルの表示     【{}】
 11: ディスプレイの表示を消す   【{}】
+12: シフトさせる行の設定       【{}】
+13: 文字のフェードアウト       【{}】
+14: 文字の点滅                 【{}】
 
 
 50: ｱｶﾈﾁｬﾝｶﾜｲｲﾔｯﾀｰの表示
@@ -320,10 +375,9 @@ def main():
 99: 終了
 ***
 
-""".format(set_w_02, set_w_03, set_w_08, set_w_09, set_w_10, set_w_11)))
+""".format(set_w_02, set_w_03, set_w_08, set_w_09, set_w_10, set_w_11,
+           set_w_12, set_w_13, set_w_14)))
 
-        # so1602.scroll_enable(False, False, True)
-        so1602.shift_enable(False, True, False)
 
         # 設定
         if n == 0:
@@ -344,7 +398,7 @@ def main():
                 so1602.entry_mode(flag_02)
 
         if n == 3:
-            print("スライド表示の変更")
+            print("スライドイン表示の変更")
             flag_03 = not flag_03
             if flag_03:
                 # 左からスライド固定の為表示方向flagはTrueにする
@@ -378,18 +432,53 @@ def main():
         if n == 9:
             print("カーソルの表示設定")
             flag_09 = not flag_09
-            so1602.display_on_off_control(True, flag_09, flag_10)
+            so1602.display_on_off_control(flag_11, flag_09, flag_10)
 
         if n == 10:
             print("点滅の表示設定")
             flag_10 = not flag_10
-            so1602.display_on_off_control(True, flag_09, flag_10)
+            so1602.display_on_off_control(flag_11, flag_09, flag_10)
 
         if n == 11:
             print("ディスプレイの表示設定")
+            flag_11 = not flag_11
+            so1602.display_on_off_control(flag_11, flag_09, flag_10)
+
+        if n == 12:
+            print("スライドさせる行の変更")
+            flag_12 = (flag_12 + 1)% 3
+
+            # print(flag_12)
+            if flag_12 == 2:
+                so1602.shift_enable(False, False, True)
+            elif flag_12 == 1:
+                so1602.shift_enable(False, True, False)
+            elif flag_12 == 0:
+                so1602.shift_enable(True, False, False)
+
+        if n == 13:
+            print("フェードの設定")
+            flag_13 = not flag_13
+            # 点滅がONならOFFにする
+            if flag_14:
+                flag_14 = not flag_14
+            so1602.fade_out_blinking(flag_13, flag_14)
+
+        if n == 14:
+            print("点滅設定")
+            flag_14 = not flag_14
+            # フェードがONならOFFにする
+            if flag_13:
+                flag_13= not flag_13
+            so1602.fade_out_blinking(flag_13, flag_14)
 
         if n == 50:
+            flag_12 = 2
             so1602.print(p_word, 100)
+
+        if n == 51:
+            flag_12 = 2
+            so1602.print(p_aka_ao, 100, flag_03)
 
 
         if n == 99:
