@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+# !/usr/bin/env python3
 
 # Filename: el_display
 __author__ = "raspython"
@@ -34,7 +34,6 @@ class So1602a:
         # コントラストの設定
         self.contrast_control(0xff)
 
-
     """
     コマンド
     """
@@ -46,7 +45,6 @@ class So1602a:
         self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x01)
         # print("ディスプレイの表示をクリア")
 
-
     def return_home(self):
         """
         カーソルを左上に戻す
@@ -54,46 +52,45 @@ class So1602a:
         self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x02)
         # print("カーソルを初期値へ")
 
-
     def entry_mode(self, right_shift=True, slide=False):
         """
         文字を表示してからのカーソル位置の移動方向の設定と
-        スライド表示表示する設定
-        スライド方向は右側から固定
-        スライド設定をした場合はカーソルの移動方向は右側の設定になる
+        文字を挿入した後にディスプレイを動かす設定
+        ディスプレイを動かす設定後の左右の方向はright_shiftの値による
 
         @param right_shift: カーソルの移動方向。Trueなら右
         @param right_shift: スライド設定
         """
         self.val = 0x04
         if right_shift:
-            self.val = 0x06
-        elif right_shift == False and self.val == 0x06:
-            self.val = 0x04
+            self.val += 0x02
 
         if slide:
-            self.val = 0x07
+            self.val += 0x01
+
         elif slide == False and right_shift:
             self.val = 0x06
+
+        else:
+            self.val = 0x04
 
         # 設定を流す
         self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, self.val)
 
-
-    def display_on_off_control(self, display=True, cursor=True,  blink=True):
+    def display_on_off_control(self, display=True, cursor=True, blink=True):
         """
         ディスプレイの表示設定
         @param display: ディスプレイの表示設定
-        @param cursor: カーソルの表示の設定
-        @param blink:  カーソル位置の点滅表示の設定
+        @param cursor: アンダーカーソルの表示の設定
+        @param blink:  ブロックカーソルの表示の設定
         """
 
-        self.val= 0x08
+        self.val = 0x08
 
-        # カーソル位置の点滅表示
+        # ブロックカーソルの表示
         if blink:
             self.val += 0x01
-        # カーソルの表示
+        # アンダーカーソルの表示
         if cursor:
             self.val += 0x02
         # ディスプレイの表示
@@ -102,7 +99,6 @@ class So1602a:
 
         # 設定を流す
         self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, self.val)
-
 
     def cursor_shift(self, right_shift=True):
         """
@@ -116,7 +112,6 @@ class So1602a:
         # 設定を流す
         self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, self.val)
 
-
     def display_shift(self, right_shift=True):
         """
         表示を移動させる
@@ -128,25 +123,6 @@ class So1602a:
 
         # 設定を流す
         self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, self.val)
-
-
-    def print_line(self, tow_line=True, double_high=False):
-        """
-        表示ラインと表示の高さ設定
-        double_highにする場合は表示は2LINEにする
-        @param towline: 文字を表示するライン default = 2LINE
-        @param double_high: 文字のフォントの高さ default = 1LINE
-        """
-        self.val = 0x20
-        # 表示ラインの設定
-        if tow_line:
-            self.val += 0x08
-        if double_high:
-            self.val += 0x04
-
-        # 設定を流す
-        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, self.val)
-
 
     def shift_enable(self, first_line=True, second_line2=True, all=True):
         """
@@ -167,12 +143,11 @@ class So1602a:
         # REのflag ON
         self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x2a)
 
-        # display shift enableをON
+        # DH'をON
         self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x1d)
 
         # REのflag OFF
         self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x28)
-
 
         """
         *** ISフラグについて ***
@@ -196,17 +171,29 @@ class So1602a:
         # ISのFlagをOFF
         self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x28)
 
-
         # display shift enableをFFする準備
         # REのflag ON
         self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x2a)
 
-        # display shift enableをOFF
+        # DH'をOFF
         self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x1c)
 
         # REのflag OFF
         self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x28)
 
+
+    def print_line(self, double_high=False):
+        """
+        表示の高さ設定
+        @param double_high: 文字のフォントの高さ default = 1LINE
+        """
+        self.val = 0x28
+        # 表示高さの変更
+        if double_high:
+            self.val += 0x04
+
+        # 設定を流す
+        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, self.val)
 
     def contrast_control(self, n=0x7f):
         """
@@ -229,7 +216,6 @@ class So1602a:
         # RE flag OFF
         self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x28)
 
-
     def fade_out_blinking(self, fade=False, blink=False, frames=0b0001):
         """
         文字をフェードアウトまたは点滅させる
@@ -242,7 +228,6 @@ class So1602a:
         1110b 120Frames
         1111b 126Frames
         ----------------
-
         @param fade:  フェードflag
         @param blink:  点滅flag
         @param frames: フェードする時間設定
@@ -266,14 +251,10 @@ class So1602a:
             self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x23)
             self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, (0b00000000))
 
-
         # SD flag OFF
         self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x78)
         # RE flag OFF
         self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x28)
-
-
-
 
     """
     文字の書き込み
@@ -299,9 +280,7 @@ class So1602a:
         self.shift_enable(False, False, True)
 
 
-
 def main():
-
     """
     変数設定
     """
@@ -351,7 +330,6 @@ def main():
         # メニューの表示
         n = int(input(
 """
-
 ***
 0 : ディスプレイの初期化
 1 : カーソルを初期位置に移動
@@ -369,15 +347,13 @@ def main():
 13: 文字のフェードアウト       【{}】
 14: 文字の点滅                 【{}】
 
-
 50: ｱｶﾈﾁｬﾝｶﾜｲｲﾔｯﾀｰの表示
+51: ｱｶﾈﾁｬﾝｶﾜｲｲﾔｯﾀｰとｱｵｲﾁｬﾝｶﾜｲｲﾔｯﾀｰの表示
 
 99: 終了
 ***
-
 """.format(set_w_02, set_w_03, set_w_08, set_w_09, set_w_10, set_w_11,
            set_w_12, set_w_13, set_w_14)))
-
 
         # 設定
         if n == 0:
@@ -427,7 +403,7 @@ def main():
         if n == 8:
             print("double_high変更")
             flag_08 = not flag_08
-            so1602.print_line(double_high=flag_08)
+            so1602.print_line(flag_08)
 
         if n == 9:
             print("カーソルの表示設定")
@@ -446,7 +422,7 @@ def main():
 
         if n == 12:
             print("スライドさせる行の変更")
-            flag_12 = (flag_12 + 1)% 3
+            flag_12 = (flag_12 + 1) % 3
 
             # print(flag_12)
             if flag_12 == 2:
@@ -469,7 +445,7 @@ def main():
             flag_14 = not flag_14
             # フェードがONならOFFにする
             if flag_13:
-                flag_13= not flag_13
+                flag_13 = not flag_13
             so1602.fade_out_blinking(flag_13, flag_14)
 
         if n == 50:
@@ -480,14 +456,12 @@ def main():
             flag_12 = 2
             so1602.print(p_aka_ao, 100, flag_03)
 
-
         if n == 99:
             # ディスプレイ表示をクリア
             so1602.clear_display()
             # ディスプレイ、カーソル、点滅表示を消灯
             so1602.display_on_off_control(display=False, cursor=False, blink=False)
             break
-
 
 
 if __name__ == '__main__':
