@@ -208,7 +208,6 @@ class So1602a:
         self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x79)
 
         # contrastの値の変更
-        self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x81)
         self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, contrast)
 
         # SD flag OFF
@@ -239,16 +238,13 @@ class So1602a:
 
         # 点滅の設定
         if blink:
-            self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x23)
             self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, (0b00110000 | frames))
 
         # フェードの設定
         elif fade:
-            self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x23)
             self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, (0b00100000 | frames))
 
         else:
-            self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, 0x23)
             self.pi_g.i2c_write_byte_data(self.so1602_adr, 0x00, (0b00000000))
 
         # SD flag OFF
