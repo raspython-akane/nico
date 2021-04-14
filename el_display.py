@@ -29,7 +29,7 @@ class So1602a:
         self.return_home()
         # 表示後のカーソル移動の方向とスライド表示設定
         self.entry_mode()
-        # 表示ライン数と拡大表示の設定
+        # 拡大表示の設定
         self.print_line()
         # コントラストの設定
         self.contrast_control(0xff)
