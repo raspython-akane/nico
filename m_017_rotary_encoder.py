@@ -23,6 +23,7 @@ led_r = 4
 # カウンタ変数
 counter = 0
 
+# LEDarrayの点灯パターン
 output_l=[0, 0x01, 0x03, 0x07, 0x0f, 0x1f, 0x3f, 0x7f, 0xff]
 
 
@@ -56,7 +57,7 @@ def led_red_control(par):
 
 def led_array_control(n):
     """
-    LEDアレイを制御する
+    LEDarrayを制御する
     入力の値までのLEDを光らせる
     @param n:どこまで光らせるかの値
     """
@@ -78,8 +79,6 @@ def count_control(pin, status, tick):
     @param status: 立ち上がり立下りの値
     @param tick:内部時計の値
     """
-    global cw
-    global ccw
     global counter
     # print("A-C on")
     # a-c間が立下り時a-cがLOWならカウントダウン
@@ -91,6 +90,7 @@ def count_control(pin, status, tick):
         p_word = str(counter)
         print("カウンタの値は {}".format(p_word))
 
+    # a-c間が立下り時a-cがHIGHならカウントアップ
     if pi_g.read(rotary_bc) == 1:
         # print("cw")
         counter += 1
