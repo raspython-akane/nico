@@ -1,4 +1,4 @@
-from __future__ import division # このインポートはファイルの戦闘でやらないとエラーが出る。
+
 #!/usr/bin/env python3
 
 # Filename: m_021_robot_arm 
@@ -27,8 +27,7 @@ green_rotary_bc = 20
 # 出力
 led_b = 25
 
-# 各々のサーボのパルス幅の上限と下限値
-# PCA9685でSG90制御時の中央値は375前後、最大値は600前後、最小値は150前後
+# 各々のサーボの移動範囲を決めるため上限値と下限値を決める。
 crow_min = 285
 crow_max = 455
 arm_left_min = 385
@@ -99,7 +98,7 @@ def servo_control(var, servo_channel):
     global servo_l
 
     # servo_channelで各々のサーボパルス変数の値の変化量の倍率を呼び出せるリストを作成
-    mag_l =[10, 5, 5, 10]
+    mag_l =[10, 10, 5, 10]
 
     # 回転方向の値にサーボによって決められた倍率をかけて
     # 一度でのサーボの変化量を決め、その値分サーボパルスの値を増減させる
@@ -155,11 +154,11 @@ def count_control_blue1(pin, status, tick):
     """
     # a-c間が立下り時a-cがLOWならカウントダウン
     if pi_g.read(blue_1_rotary_bc) == 0:
-        print("青左 ccw")
+        # print("青左 ccw")
         servo_control(-1, 1)
     # a-c間が立下り時a-cがHIGHならカウントアップ
     if pi_g.read(blue_1_rotary_bc) == 1:
-        print("青左 cw")
+        # print("青左 cw")
         servo_control(1, 1)
 
 
@@ -174,11 +173,11 @@ def count_control_blue2(pin, status, tick):
     """
     # a-c間が立下り時a-cがLOWならカウントダウン
     if pi_g.read(blue_2_rotary_bc) == 0:
-        print("青右 ccw")
+        # print("青右 ccw")
         servo_control(-1, 2)
     # a-c間が立下り時a-cがHIGHならカウントアップ
     if pi_g.read(blue_2_rotary_bc) == 1:
-        print("青右 cw")
+        # print("青右 cw")
         servo_control(1, 2)
 
 
@@ -193,10 +192,10 @@ def count_control_green(pin, status, tick):
     """
     # a-c間が立下り時a-cがLOWならカウントダウン
     if pi_g.read(green_rotary_bc) == 0:
-        print("緑 ccw")
+        # print("緑 ccw")
         servo_control(-1, 3)
     if pi_g.read(green_rotary_bc) == 1:
-        print("緑 cw")
+        # print("緑 cw")
         servo_control(1, 3)
 
 
