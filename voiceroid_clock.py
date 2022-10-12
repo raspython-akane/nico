@@ -32,7 +32,7 @@ humidity = 0
 
 
 """
-GPIOとDHT11の準備+
+GPIOとDHT11の準備
 """
 
 # GPIO用意
@@ -45,7 +45,7 @@ instance = dht11.DHT11(pin = 21)
 OpenWeatherMAPの準備
 """
 # OpenWeatherのAPIのkye
-api_key = "piyopiyohogehoge"
+api_key = "28a1e3751ec685dc1e0587889e20cf40"
 
 """
 # URLを作成
@@ -58,7 +58,7 @@ lang=ja: 日本語表示
 exclude=current,minutely,alerts&cnt: current minutely alerts&cntの情報の表示をしない
 appid=hogehoge: api_key
 """
-api_url = "http://api.openweathermap.org/data/2.5/onecall?lat=経度&lon=緯度&units=metric&lang=ja&exclude=current,minutely,alerts&cnt=16&appid=piyopiyohogehoge"
+api_url = "http://api.openweathermap.org/data/2.5/onecall?lat=36.0427511&lon=140.1439777&units=metric&lang=ja&exclude=current,minutely,alerts&cnt=16&appid=28a1e3751ec685dc1e0587889e20cf40"
 
 
 """
@@ -142,25 +142,34 @@ w50d =ImageTk.PhotoImage(w50_resize)
 
 class MainFrame():
     def __init__(self):
+        print("インスタンス化")
 
         global running
-
+        # print(running)
         # 更新のいらない文字の表記
+        print("更新のいらない文字の表記")
         self.dislpal_text()
         # 茜と葵の配置
+        print("キャラの表記")
         self.voiceroid_img(akane_icon, aoi_icon)
         # 年月日の初期表示
+        print("日にちの表記")
         self.now = datetime.now()
         # 天気情報の初期表示
-        self.weather(self.now)
+        print("天気の表示")
+        # self.weather(self.now)
         self.calender(self.now)
         # 温度と湿度の初期表示
+        print("温度の表記")
         self.temp_display()
         # 日時情報の更新
+        print("時間の表記")
         self.update_display()
         # あかり草の配置
+        print("あかり草の表記")
         self.akarisou()
 
+        print("flagチェック {}".format(running))
         # イベント処理のループ
         root.mainloop()
 
@@ -222,6 +231,7 @@ class MainFrame():
         日時の描画
         @param now: datetimeの値
         """
+        print("日にちの更新")
         # 前の表示のクリア
         canvas.delete("calender")
 
@@ -280,6 +290,7 @@ class MainFrame():
         気象情報の表示
         @param now: datetimeの値
         """
+        print("天気チェック")
         # 呼び出されるごとにタグわけした描画をクリアする
         canvas.delete("thr_hour")
 
@@ -304,11 +315,12 @@ class MainFrame():
         description = []
         icon_keys = []
         rainy_percent_list = ["---", "---", "---", "---", "---", "---", "---", "---"]
-
         # OpenWeatherMapからjsonのデータを取得
         response = requests.get(api_url)
+        print(response)
         json_date = json.loads(response.text)
-        # print(json_date)
+
+        print("JSON天気データ{} {}".format(response, json_date))
 
         # 日毎のデーターの処理
         for i, day_date in enumerate(json_date["daily"]):
@@ -492,7 +504,9 @@ class MainFrame():
         # 0:30から3時間ごとに気象情報を更新
         l = [0, 3, 6, 9, 12, 15, 18, 21]
         if (now.hour in l) and now.minute == 30 and now.second == 0:
-            self.weather(now)
+            # APIが読めないときの予備
+            pass
+            # self.weather(now)
 
         # 温度と湿度を更新
         self.temp_display()
@@ -541,15 +555,17 @@ def temp_and_humidity():
         result = instance.read()
         # print(result.temperature, result.humidity)
 
+        # 温度と湿度を変数に入れる
         temp = result.temperature
         humidity = result.humidity
 
-        # DHT11の読み込みがおかしいときは更新をしない
+        # 温度と湿度の読み込みが失敗したときは再読み込み
         if temp == 0 and humidity == 0:
             pass
         else:
             time.sleep(10)
 
+    # print(running)
     print("温度監視終了")
 
 
