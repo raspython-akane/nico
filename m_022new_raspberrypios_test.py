@@ -53,7 +53,7 @@ def led_flash(R_pin, B_pin, G_pin):
             print("緑のduty比: {}".format(int(duty_l[2] / 10000)))
             gpio.set_PWM_dutycycle(G_pin, int(duty_l[2] / 10000))
 
-            # duty比を変更後0.1秒待つ
+            # duty比を変更後0.5秒待つ
             time.sleep(0.5)
 
             # duty比のリストを初期化
