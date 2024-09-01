@@ -512,7 +512,8 @@ class MainFrame():
         self.temp_display()
 
         # 0.5秒ごとに画面を更新
-        root.after(500, self.update_display)
+
+
 
 
 
